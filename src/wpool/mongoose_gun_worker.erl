@@ -55,8 +55,7 @@ handle_call({request, FullPath, Method, Headers, Query, Retries, Timeout}, _From
 handle_cast(_R, State) ->
     {noreply, State}.
 
-handle_info({'DOWN', MRef, process, _PID, _Reason}, State) ->
-    demonitor(MRef),
+handle_info({'DOWN', MRef, process, _PID, _Reason}, #state{monitor = MRef} = State) ->
     {noreply, State#state{pid = undefined, monitor = undefined}}.
 
 %%%===================================================================
@@ -70,7 +69,6 @@ create_or_get_connection(#state{pid = undefined} = State) ->
 create_or_get_connection(#state{pid = PID, monitor = MRef} = State) ->
     receive
         {'DOWN', MRef, process, PID, _Reason} ->
-            demonitor(MRef),
             {ok, NewPID} = gun:open(State#state.host, State#state.port, State#state.opts),
             {ok, _Protocol} = gun:await_up(NewPID),
             State#state{pid = NewPID, monitor = monitor(process, NewPID)}
