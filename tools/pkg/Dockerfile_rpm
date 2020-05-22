@@ -53,7 +53,8 @@ FROM $dockerfile_platform
 # Copy built package from previous image and install it with required dependencies
 WORKDIR /root/
 COPY --from=builder /root/mongooseim*.rpm .
-RUN yum -y update; yum install -y mongooseim*.rpm
+RUN yum install -y epel-release
+RUN yum install -y mongooseim*.rpm
 
 # Simple check if MiM works
 COPY --from=builder /root/rpmbuild/BUILD/mongooseim/tools/wait-for-it.sh .
